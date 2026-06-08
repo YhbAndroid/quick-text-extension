@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Popup</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      width: 700px;
+      height: auto;
+      max-height: 620px;
+      overflow: hidden;
+    }
+
+    body {
+      width: 100%;
+      height: 100%;
+      max-height: 580px;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      animation: popupFadeIn 0.3s ease-out;
+    }
+
+    @keyframes popupFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .header {
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    .header p {
+      font-size: 11px;
+      opacity: 0.9;
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .header-actions .btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      box-shadow: none;
+    }
+
+    .header-actions .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .storage-info {
+      font-size: 11px;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .storage-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .storage-bar {
+      width: 60px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .storage-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .storage-bar-fill.warning {
+      background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
+    }
+
+    .storage-bar-fill.danger {
+      background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .storage-text {
+      font-size: 10px;
+      opacity: 0.95;
+      white-space: nowrap;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    .add-section {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    .add-section input.text-input {
+      flex: 7;
+      padding: 10px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+      background: white;
+    }
+
+    .add-section input.tag-input {
+      flex: 3;
+      padding: 10px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+      background: white;
+    }
+
+    .add-section input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+    .add-section input::placeholder {
+      color: #999;
+    }
+
+    .import-export-section {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+      margin-left: 5px;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s ease, height 0.3s ease;
+    }
+
+    .btn:active::after {
+      width: 200px;
+      height: 200px;
+    }
+
+    .btn.copied {
+      animation: copySuccess 0.4s ease-out;
+    }
+
+    @keyframes copySuccess {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .btn-add {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-add:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-add:active {
+      transform: translateY(0);
+    }
+
+    .btn-copy {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba(17, 153, 142, 0.3);
+    }
+
+    .btn-copy:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(17, 153, 142, 0.4);
+    }
+
+    .btn-edit {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba(79, 172, 254, 0.3);
+    }
+
+    .btn-edit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(79, 172, 254, 0.4);
+    }
+
+    .btn-delete {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba(245, 87, 108, 0.3);
+    }
+
+    .btn-delete:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(245, 87, 108, 0.4);
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+    }
+
+    .btn-cancel {
+      background: #9e9e9e;
+      color: white;
+    }
+
+    .btn-cancel:hover {
+      background: #757575;
+    }
+
+    .btn-import {
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba(67, 233, 123, 0.3);
+    }
+
+    .btn-import:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(67, 233, 123, 0.4);
+    }
+
+    .btn-export {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba(250, 112, 154, 0.3);
+    }
+
+    .btn-export:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(250, 112, 154, 0.4);
+    }
+
+    .list-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: white;
+      border-radius: 10px;
+      padding: 4px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .list-container::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .list-container::-webkit-scrollbar-track {
+      background: #f5f5f5;
+      border-radius: 3px;
+    }
+
+    .list-container::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+
+    .list-container::-webkit-scrollbar-thumb:hover {
+      background: #999;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      margin: 4px 0;
+      background: #fafafa;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .list-item:hover {
+      background: #f5f5f5;
+      border-color: #e0e0e0;
+    }
+
+    .list-item.dragging {
+      opacity: 0.5;
+      background: #e8eaf6;
+      border-color: #667eea;
+    }
+
+    .list-item.drag-over {
+      border-top: 3px solid #667eea;
+      background: #f3e5f5;
+    }
+
+    .drag-handle {
+      cursor: grab;
+      padding: 4px 6px;
+      color: #bdbdbd;
+      user-select: none;
+      font-size: 16px;
+      transition: color 0.2s ease;
+    }
+
+    .drag-handle:hover {
+      color: #9e9e9e;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+      color: #667eea;
+    }
+
+    .text-content {
+      flex: 1;
+      font-size: 14px;
+      color: #333;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: flex;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .edit-input {
+      flex: 7;
+      padding: 8px 12px;
+      border: 2px solid #667eea;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      background: white;
+    }
+
+    .list-item .tag-input {
+      flex: 3;
+      padding: 8px 12px;
+      border: 2px solid #667eea;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      background: white;
+    }
+
+    .edit-input:focus {
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .status {
+      font-size: 12px;
+      color: #1565c0;
+      text-align: center;
+      min-height: 20px;
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: #e3f2fd;
+      border-radius: 6px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .status.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .tag-section {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    .tag-filter {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s ease;
+      background: white;
+    }
+
+    .tag-filter:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+    .tag-label {
+      font-size: 12px;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      color: white;
+      margin-right: 6px;
+      flex-shrink: 0;
+    }
+
+    .tag-work { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .tag-personal { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .tag-important { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .tag-default { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+    .tag-select-container {
+      position: relative;
+      flex: 3;
+    }
+
+    .tag-input {
+      padding: 10px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+      background: white;
+    }
+
+    .tag-input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+    .tag-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      margin-top: 4px;
+      z-index: 100;
+      max-height: 150px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .tag-dropdown.show {
+      display: block;
+    }
+
+    .tag-option {
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .tag-option:last-child {
+      border-bottom: none;
+    }
+
+    .tag-option:hover {
+      background: #f5f5f5;
+    }
+
+    .tag-option.no-tags {
+      color: #999;
+      font-style: italic;
+      cursor: default;
+    }
+
+    .tag-option.no-tags:hover {
+      background: transparent;
+    }
+
+    /* 编辑时标签选择器样式 */
+    .list-item .tag-select-container {
+      flex: 3;
+      display: flex;
+      align-items: center;
+    }
+
+    .list-item .tag-input {
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    .list-item .tag-dropdown {
+      left: 0;
+      right: auto;
+      width: 150px;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+
+    .filter-tag {
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid #ddd;
+      background: white;
+      color: #666;
+    }
+
+    .filter-tag.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: transparent;
+    }
+
+    .filter-tag:hover {
+      border-color: #667eea;
+    }
+
+    .filter-tag.active:hover {
+      opacity: 0.9;
+    }
+
+    .clear-filter {
+      font-size: 11px;
+      color: #999;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .clear-filter:hover {
+      background: #f5f5f5;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1>快捷文本</h1>
+        <p>点击整行复制文本（拖动调整顺序）</p>
+      </div>
+      <div class="storage-info">
+        <span>存储容量</span>
+        <div class="storage-bar-container">
+          <div class="storage-bar">
+            <div class="storage-bar-fill" id="storageBarFill"></div>
+          </div>
+          <span class="storage-text" id="storageText">计算中...</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-sm btn-import" id="importBtn">导入</button>
+        <button class="btn btn-sm btn-export" id="exportBtn">导出</button>
+        <input type="file" id="importFile" class="hidden-input" accept=".txt">
+      </div>
+    </div>
+  </div>
+  
+  <div class="content">
+    <div class="add-section">
+      <input type="text" id="newText" class="text-input" placeholder="输入新的快捷文本..." maxlength="200">
+      <div class="tag-select-container">
+        <input type="text" id="newTag" class="tag-input" placeholder="标签" maxlength="10">
+        <div class="tag-dropdown" id="tagDropdown">
+          <!-- 标签选项将通过 JavaScript 动态生成 -->
+        </div>
+      </div>
+      <button class="btn btn-add" id="addBtn">添加</button>
+    </div>
+    
+    <div class="tags-container" id="tagsContainer">
+      <span class="filter-tag active" data-tag="">全部</span>
+    </div>
+    
+    <div class="list-container" id="textList">
+      <!-- 列表项将通过 JavaScript 动态生成 -->
+    </div>
+    
+    <div class="status" id="status"></div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
